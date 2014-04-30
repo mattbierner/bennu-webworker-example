@@ -1,0 +1,72 @@
+static importScripts;
+static requirejs, require;
+static postMessage, self;
+
+importScripts './resources/require.js';
+
+requirejs.config {
+    baseUrl: '.',
+    paths: {
+        'bennu': 'dependencies/bennu/dist',
+        'nu-stream': 'dependencies/nu-stream/dist',
+        'seshet': 'dependencies/seshet/dist/seshet'
+    }
+};
+
+require @ [
+   'bennu/parse',
+   'bennu/text',
+   'bennu/incremental']
+\
+    parse#{next sequence many many1}
+    {match}
+    incremental ->
+{
+// Parser
+    var inc := parse.modifyState(+, 1);
+    
+    // note that these regexps are not really correct, but they works well enough
+    // for this demo
+    var sep := many match(`\W`m);
+    var word := many1 match(`\w`m);
+    
+    var token := sequence(
+        sep,
+        word,
+        inc);
+
+    var parser := next(
+        many token,
+        parse.getState);
+    
+// State
+    var state;
+    
+// Actions
+    var begin = \ -> {
+        state = incremental.runInc(parser, 0);
+    };
+    
+    var provide = \input -> {
+        state = incremental.provideString(input, state);
+    };
+    
+    var finish = \ ->
+        postMessage <| incremental.finish(state);
+    
+// Messaging
+    self.onmessage = \e -> {
+        var m = JSON.parse(e.data);
+        switch (m.type) {
+        case 'begin':
+            return begin();
+            
+        case 'provide':
+            return provide(m.input);
+        
+        case 'status':
+        case 'finish':
+            return finish();
+        }
+    };
+};

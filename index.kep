@@ -1,0 +1,84 @@
+/**
+ * Async word counter.
+ * 
+ * Demonstrates running a Bennu parser on a webworker and getting incremental
+ * feedback during parsing (Obviously using character level parser combinators to
+ * get a word count is not a good idea for real world applications).
+ */
+static $;
+static setInterval, clearInterval, Worker;
+
+// Config
+var SIZE := 100; // 'buffer' size to provide on each iteration
+var TIMEOUT := 0; // ms timeout between provides
+
+// State
+var len = 0;
+var index = 0;
+var input = "";
+
+var interval;
+
+// Worker
+var worker := new Worker("worker.js");
+
+worker.onmessage = \x -> {
+    $('#word-count').text(x.data);
+};
+
+// Messaging
+var post = JSON.stringify \> worker.postMessage.bind(worker);
+
+var postBegin = post @ { type: 'begin' };
+
+var postStatus = post @ { type: 'status' };
+
+var postFinish = post @ { type: 'finish' };
+
+// Actions
+var finish := \ -> {
+    clearInterval(interval);
+    
+    postFinish();
+};
+
+var provide := \ -> {
+    var end := index + SIZE;
+    var next := Array.prototype.slice.call(input, index, end).join('');
+    index = end;
+
+    post {
+        type: 'provide',
+        input: next
+    };
+    
+    if (index >= len) {
+        finish();
+    } else {
+        // Request the working value from parsing
+        postStatus();
+    }
+};
+
+var begin = \i -> {
+    len = i.length;
+    index = 0;
+    input = i;
+    
+    // Signal a reset
+    postBegin();
+    
+    // Start providing data
+    clearInterval(interval);
+    interval = setInterval(provide, TIMEOUT);
+};
+
+// Events
+$\->{
+    $('#count-button')
+        .click \ ->
+            begin($('#input').val());
+    
+    $('#stop-button')
+        .click(finish);
+};

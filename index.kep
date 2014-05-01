@@ -18,7 +18,7 @@ var input = "";
 var interval;
 
 // Worker
-var worker := new Worker("worker.js");
+var worker := new Worker "worker.js";
 
 worker.onmessage = (.data) \> JSON.parse \> \x -> {
     if (x.error) {
@@ -29,20 +29,19 @@ worker.onmessage = (.data) \> JSON.parse \> \x -> {
 };
 
 // Messaging
-var post = JSON.stringify \> worker.postMessage.bind(worker);
+var post := JSON.stringify \> worker.postMessage.bind(worker);
 
-var postBegin = post @ { type: 'begin' };
+var postBegin := post @ { type: 'begin' };
 
-var postStatus = post @ { type: 'status' };
+var postStatus := post @ { type: 'status' };
 
-var postFinish = post @ { type: 'finish' };
+var postFinish := post @ { type: 'finish' };
 
-var postProvide = post <\ \x -> ({ type: 'provide', input: x });
+var postProvide := post <\ \x -> ({ type: 'provide', input: x });
 
 // Actions
 var finish := \ -> {
     clearInterval(interval);
-    
     postFinish();
 };
 
@@ -53,7 +52,7 @@ var provide := \ -> {
     // reading of a websocket or in response to UI events.
     
     var end := index + SIZE;
-    var next := Array.prototype.slice.call(input, index, end).join('');
+    var next := input.substring(index, end);
     index = end;
     
     postProvide(next);
@@ -66,7 +65,7 @@ var provide := \ -> {
     }
 };
 
-var begin = \i -> {
+var begin := \i -> {
     len = i.length;
     index = 0;
     input = i;

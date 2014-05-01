@@ -3,7 +3,7 @@
  * DO NOT EDIT
 */
 "use strict";
-var x0, y0, x1, len = 0,
+var x0, y0, len = 0,
     index = 0,
     input = "",
     interval, worker = new(Worker)("worker.js"),
@@ -30,20 +30,19 @@ var post = ((x0 = JSON.stringify), (y0 = worker.postMessage.bind(worker)), (func
     postFinish = post.bind(null, ({
         type: "finish"
     })),
-    postProvide = ((x1 = post), (function(z) {
-        return x1(({
+    postProvide = (function(z) {
+        return post(({
             type: "provide",
             input: z
         }));
-    })),
+    }),
     finish = (function() {
         clearInterval(interval);
         postFinish();
     }),
     provide = (function() {
         var end = (index + 20),
-            next = Array.prototype.slice.call(input, index, end)
-                .join("");
+            next = input.substring(index, end);
         (index = end);
         postProvide(next);
         if ((end >= len)) {

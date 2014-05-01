@@ -2,7 +2,7 @@
 
 ## About
 Demonstrates running a [Bennu][bennu] parser on a webworker and getting incremental
-feedback during parsing.
+feedback during parsing. [Online demo](http://mattbierner.github.io/bennu-webworker-example/).
 
 ### Install
 

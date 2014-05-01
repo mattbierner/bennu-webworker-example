@@ -1,9 +1,8 @@
 /**
- * Async word counter.
+ * @fileOverview Main thread.
  * 
- * Demonstrates running a Bennu parser on a webworker and getting incremental
- * feedback during parsing (Obviously using character level parser combinators to
- * get a word count is not a good idea for real world applications).
+ * Simulates input from a stream using `setInterval`. Requests realtime feedback
+ * during parsing.
  */
 static $;
 static setInterval, clearInterval, Worker;
@@ -38,6 +37,8 @@ var postStatus = post @ { type: 'status' };
 
 var postFinish = post @ { type: 'finish' };
 
+var postProvide = post <\ \x -> ({ type: 'provide', input: x });
+
 // Actions
 var finish := \ -> {
     clearInterval(interval);
@@ -54,11 +55,8 @@ var provide := \ -> {
     var end := index + SIZE;
     var next := Array.prototype.slice.call(input, index, end).join('');
     index = end;
-
-    post {
-        type: 'provide',
-        input: next
-    };
+    
+    postProvide(next);
     
     if (index >= len) {
         finish();

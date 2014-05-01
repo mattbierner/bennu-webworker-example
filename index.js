@@ -3,16 +3,23 @@
  * DO NOT EDIT
 */
 "use strict";
-var x, y, len = 0,
+var x0, y0, len = 0,
     index = 0,
     input = "",
-    interval, worker = new(Worker)("worker.js");
-(worker.onmessage = (function(x) {
-    $("#word-count")
-        .text(x.data);
+    interval, worker = new(Worker)("worker.js"),
+    x = JSON.parse,
+    y = (function(x0) {
+        if (x0.error) {} else {
+            $("#word-count")
+                .text(x0.value);
+        }
+    });
+(worker.onmessage = (function(z) {
+    var z0 = z.data;
+    return y(x(z0));
 }));
-var post = ((x = JSON.stringify), (y = worker.postMessage.bind(worker)), (function(z) {
-    return y(x(z));
+var post = ((x0 = JSON.stringify), (y0 = worker.postMessage.bind(worker)), (function(z) {
+    return y0(x0(z));
 })),
     postBegin = post.bind(null, ({
         type: "begin"
@@ -28,7 +35,7 @@ var post = ((x = JSON.stringify), (y = worker.postMessage.bind(worker)), (functi
         postFinish();
     }),
     provide = (function() {
-        var end = (index + 100),
+        var end = (index + 20),
             next = Array.prototype.slice.call(input, index, end)
                 .join("");
         (index = end);
@@ -48,7 +55,8 @@ var post = ((x = JSON.stringify), (y = worker.postMessage.bind(worker)), (functi
         (input = i);
         postBegin();
         clearInterval(interval);
-        (interval = setInterval(provide, 0));
+        (interval = setInterval(provide, $("#timeout")
+            .val()));
     });
 $((function() {
     $("#count-button")

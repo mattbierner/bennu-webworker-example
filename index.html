@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Parse Console</title>
+    <title>Bennu Web Worker Example</title>
     <style>
         .content > * {
             width: 50%;
@@ -15,21 +15,8 @@
             display: block;
         }
         
-        .console textarea {
-            width: 100%;
-            box-sizing: border-box;
-        }
-        
         .input textarea {
             width: 100%;
-        }
-        
-        .output pre {
-            white-space: pre-wrap;
-        }
-        
-        .ParseError, .LexError {
-            color: red;
         }
     </style>
 </head>
@@ -45,18 +32,25 @@
             <div>
                 <button id='count-button'>Count Words</button>
                 <button id='stop-button'>Stop</button>
+                <span>Timeout: </span>
+                <select id='timeout'>
+                  <option value="0">0ms</option>
+                  <option value="50">50ms</option>
+                  <option value="100">100ms</option>
+                  <option value="250">250ms</option>
+                  <option value="500">500ms</option>
+                </select>
             </div>
         </div>
         <div class='output'>
             <h2>Output</h2>
-            <pre id='word-count'></pre>
+            <p>Word Count: <span id='word-count'></span></p>
         </div>
     </div>
     
     <script type="application/javascript" src="resources/require.js"></script>
     <script src="resources/jquery-1.8.3.min.js"></script>
     <script type="application/javascript" src="./index.js"></script>
-
 </body>
-    
+
 </html>

@@ -9,21 +9,24 @@ static $;
 static setInterval, clearInterval, Worker;
 
 // Config
-var SIZE := 100; // 'buffer' size to provide on each iteration
-var TIMEOUT := 0; // ms timeout between provides
+var SIZE := 20; /// 'buffer' size to provide on each iteration.
 
 // State
 var len = 0;
 var index = 0;
 var input = "";
-
+ 
 var interval;
 
 // Worker
 var worker := new Worker("worker.js");
 
-worker.onmessage = \x -> {
-    $('#word-count').text(x.data);
+worker.onmessage = (.data) \> JSON.parse \> \x -> {
+    if (x.error) {
+        // handle error
+    } else {
+        $('#word-count').text(x.value);
+    }
 };
 
 // Messaging
@@ -43,6 +46,11 @@ var finish := \ -> {
 };
 
 var provide := \ -> {
+    // Simulate input being provided in chunks.
+    // Chunking input allows reading incremental results and using input streams
+    // that are not fully available. The input source can be partial and async, such as
+    // reading of a websocket or in response to UI events.
+    
     var end := index + SIZE;
     var next := Array.prototype.slice.call(input, index, end).join('');
     index = end;
@@ -70,7 +78,7 @@ var begin = \i -> {
     
     // Start providing data
     clearInterval(interval);
-    interval = setInterval(provide, TIMEOUT);
+    interval = setInterval(provide, $('#timeout').val());
 };
 
 // Events

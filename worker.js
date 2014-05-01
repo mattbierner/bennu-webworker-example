@@ -13,8 +13,7 @@ requirejs.config(({
     })
 }));
 require(["bennu/parse", "bennu/text", "bennu/incremental"], (function(parse, __o, incremental) {
-    var next = parse["next"],
-        sequence = parse["sequence"],
+    var sequence = parse["sequence"],
         many = parse["many"],
         many1 = parse["many1"],
         match = __o["match"],
@@ -23,16 +22,27 @@ require(["bennu/parse", "bennu/text", "bennu/incremental"], (function(parse, __o
         })),
         sep = many(match(/\W/m)),
         word = many1(match(/\w/m)),
-        token = sequence(sep, word, inc),
-        parser = next(many(token), parse.getState),
-        state, begin = (function() {
-            (state = incremental.runInc(parser, 0));
+        token = sequence(word, sep, inc),
+        parser = sequence(sep, many(token), parse.getState),
+        state, ok = (function(x) {
+            return postMessage(JSON.stringify(({
+                value: x
+            })));
+        }),
+        err = (function(x) {
+            return postMessage(JSON.stringify(({
+                error: true,
+                value: x
+            })));
+        }),
+        begin = (function() {
+            (state = incremental.parseInc(parser, 0, ok, err));
         }),
         provide = (function(input) {
             (state = incremental.provideString(input, state));
         }),
         finish = (function() {
-            return postMessage(incremental.finish(state));
+            return incremental.finish(state);
         });
     (self.onmessage = (function(e) {
         var m = JSON.parse(e.data);

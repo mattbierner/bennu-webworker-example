@@ -1,3 +1,9 @@
+/**
+ * @fileOverview Word count parser web worker.
+ * 
+ * Demonstrates incrementally feeding chunks of data to a parser and providing
+ * status updates back to the main thread.
+ */
 static importScripts;
 static requirejs, require;
 static postMessage, self;
@@ -22,29 +28,33 @@ require @ [
     {match}
     incremental ->
 {
-// Parser
+// Word Count Parser
     var inc := parse.modifyState(+, 1);
     
-    // note that these regexps are not really correct, but they works well enough
+    // note that these regexps are not really correct, but they work well enough
     // for this demo
     var sep := many match(`\W`m);
     var word := many1 match(`\w`m);
     
-    var token := sequence(
-        sep,
-        word,
-        inc);
+    var token := sequence(word, sep, inc);
 
-    var parser := next(
+    var parser := sequence(
+        sep,
         many token,
         parse.getState);
     
 // State
     var state;
     
+// Callbacks
+    var ok := \x -> postMessage <| JSON.stringify { value: x };
+    
+    // This specific word count parser does not actually generate any errors.
+    var err := \x -> postMessage <| JSON.stringify { error: true, value: x };
+    
 // Actions
     var begin = \ -> {
-        state = incremental.runInc(parser, 0);
+        state = incremental.parseInc(parser, 0, ok, err);
     };
     
     var provide = \input -> {
@@ -52,7 +62,7 @@ require @ [
     };
     
     var finish = \ ->
-        postMessage <| incremental.finish(state);
+        incremental.finish(state);
     
 // Messaging
     self.onmessage = \e -> {
